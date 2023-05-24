@@ -1,25 +1,28 @@
 import { Routes, Route } from "react-router-dom";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
+import useAuth from "@/hooks/useAuth";
 import {
   Sidenav,
   DashboardNavbar,
   Configurator,
   Footer,
 } from "@/widgets/layout";
-import routes from "@/routes";
+import routes from "@/routes/routes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
+import Authorized from "@/routes/AuthorizedRoutes";
 
 export function Admin() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType } = controller;
+  const {user} = useAuth();
 
   return (
     <div className="min-h-screen bg-blue-gray-50/50">
       <Sidenav
         routes={routes}
         brandImg={
-          sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"
+          '/assets/logo.png'
         }
       />
       <div className="p-4 xl:ml-80">
@@ -38,14 +41,14 @@ export function Admin() {
           {routes.map(
             ({ layout, pages }) =>
               layout === "admin" &&
-              pages.map(({ path, element }) => (
-                <Route exact path={path} element={element} />
+              pages.map(({ path, element,roles }) => (
+                <Route key={path} element={<Authorized allowRoles={roles} />}><Route exact path={path} element={element} /></Route>
               ))
           )}
         </Routes>
-        <div className="text-blue-gray-600">
+        {user && <div className="text-blue-gray-600">
           <Footer />
-        </div>
+        </div>}
       </div>
     </div>
   );

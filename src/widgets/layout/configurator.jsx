@@ -65,9 +65,11 @@ export function Configurator() {
 
   return (
     <aside
-      className={`fixed top-0 right-0 z-50 h-screen w-96 bg-white px-2.5 shadow-lg transition-transform duration-300 ${
+      className={`fixed top-0 right-0 z-50 h-screen w-96 bg-white px-2.5 shadow-lg transition-transform duration-300 
+      ${
         openConfigurator ? "translate-x-0" : "translate-x-96"
-      }`}
+      }
+      `}
     >
       <div className="flex items-start justify-between px-6 pt-8 pb-6">
         <div>
@@ -133,7 +135,7 @@ export function Configurator() {
             </Button>
           </div>
         </div>
-        <div className="mb-12">
+        {/* <div className="mb-12">
           <hr />
           <div className="flex items-center justify-between py-5">
             <Typography variant="h6" color="blue-gray">
@@ -228,7 +230,7 @@ export function Configurator() {
               Share
             </Button>
           </div>
-        </div>
+        </div> */}
       </div>
     </aside>
   );

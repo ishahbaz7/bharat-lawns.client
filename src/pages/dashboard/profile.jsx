@@ -39,9 +39,9 @@ export function Profile() {
                 className="rounded-lg shadow-lg shadow-blue-gray-500/40"
               />
               <div>
-                <Typography variant="h5" color="blue-gray" className="mb-1">
+                <a><Typography variant="h5" color="blue-gray" className="mb-1">
                   Richard Davis
-                </Typography>
+                </Typography></a>
                 <Typography
                   variant="small"
                   className="font-normal text-blue-gray-600"
@@ -138,7 +138,7 @@ export function Profile() {
               </ul>
             </div>
           </div>
-          <div className="px-4 pb-4">
+          <div id="abcd" className="px-4 pb-4">
             <Typography variant="h6" color="blue-gray" className="mb-2">
               Projects
             </Typography>

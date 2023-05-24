@@ -1,3 +1,44 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* .rdt_TableHeadRow {
+    @apply text-white from-green-400 to-green-600 bg-gradient-to-tr text-base;
+    ;
+} */
+
+.rdt_TableHeadRow {
+    @apply !bg-blue-gray-800 text-white border-blue-gray-50 text-base border
+}
+
+.rdt_TableRow {
+    @apply !text-base
+}
+
+.rdt_TableCell {
+    @apply border
+}
+
+.rdt_TableCol {
+    @apply !border-blue-gray-50 border-[0.5px] border-b-0
+}
+
+.rdt_TableBody {
+    max-height: 420px;
+    overflow-y: scroll;
+    min-height: 300px;
+}
+
+.rdt_Table {
+    min-height: 300px;
+}
+
+/* input size min width change */
+div:has(>.min-w-130px) {
+    min-width: 130px;
+}

@@ -1,36 +1,20 @@
 import { Routes, Route } from "react-router-dom";
-import {
-  ChartPieIcon,
-  UserIcon,
-  UserPlusIcon,
-  ArrowRightOnRectangleIcon,
-} from "@heroicons/react/24/solid";
-import { Navbar, Footer } from "@/widgets/layout";
-import routes from "@/routes";
+import { Footer } from "@/widgets/layout";
+import routes from "@/routes/routes";
+import { useLocation, useNavigate } from "react-router-dom";
+import useAuth from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 export function Auth() {
-  // const navbarRoutes = [
-  //   {
-  //     name: "dashboard",
-  //     path: "/dashboard/home",
-  //     icon: ChartPieIcon,
-  //   },
-  //   {
-  //     name: "profile",
-  //     path: "/dashboard/home",
-  //     icon: UserIcon,
-  //   },
-  //   {
-  //     name: "sign up",
-  //     path: "/auth/sign-up",
-  //     icon: UserPlusIcon,
-  //   },
-  //   {
-  //     name: "sign in",
-  //     path: "/auth/sign-in",
-  //     icon: ArrowRightOnRectangleIcon,
-  //   },
-  // ];
+   const location = useLocation();
+  const navigate = useNavigate();
+  const from = location.state?.from?.pathname || "/";
+  const { user } = useAuth();
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user]);
 
   return (
     <div className="relative min-h-screen w-full">

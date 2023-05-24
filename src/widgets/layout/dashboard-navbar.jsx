@@ -2,7 +2,6 @@ import { useLocation, Link } from "react-router-dom";
 import {
   Navbar,
   Typography,
-  Button,
   IconButton,
   Breadcrumbs,
   Input,
@@ -12,8 +11,8 @@ import {
   MenuItem,
   Avatar,
 } from "@material-tailwind/react";
+import { AiFillSetting, AiOutlineLogout } from "react-icons/ai";
 import {
-  UserCircleIcon,
   Cog6ToothIcon,
   BellIcon,
   ClockIcon,
@@ -25,12 +24,15 @@ import {
   setOpenConfigurator,
   setOpenSidenav,
 } from "@/context";
+import useAuth from "@/hooks/useAuth";
+import avatarImg from "/assets/avatar.jpeg";
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { fixedNavbar, openSidenav } = controller;
   const { pathname } = useLocation();
-  const [layout, page] = pathname.split("/").filter((el) => el !== "");
+  const [layout, page] = pathname?.split("/").filter((el) => el !== "");
+  const { user, logout } = useAuth();
 
   return (
     <Navbar
@@ -64,11 +66,11 @@ export function DashboardNavbar() {
               color="blue-gray"
               className="font-normal"
             >
-              {page.split("-").join(" ")}
+              {page?.split("-").join(" ")}
             </Typography>
           </Breadcrumbs>
           <Typography variant="h6" color="blue-gray">
-            {page.split("-").join(" ")}
+            {page?.split("-").join(" ")}
           </Typography>
         </div>
         <div className="flex items-center">
@@ -83,23 +85,37 @@ export function DashboardNavbar() {
           >
             <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
           </IconButton>
-          <Link to="/auth/sign-in">
-            <Button
-              variant="text"
-              color="blue-gray"
-              className="hidden items-center gap-1 px-4 xl:flex"
-            >
-              <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-              Sign In
-            </Button>
-            <IconButton
-              variant="text"
-              color="blue-gray"
-              className="grid xl:hidden"
-            >
-              <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-            </IconButton>
-          </Link>
+          <Menu>
+            <MenuHandler>
+              <div className="h-[28px] w-[28px] cursor-pointer overflow-hidden rounded-full ">
+                <img
+                  src={
+                    user?.profileImgUrl
+                      ? `${import.meta.env.VITE_API}/${user?.profileImgUrl}`
+                      : avatarImg
+                  }
+                  alt="profile image"
+                  className="w-full shadow-lg shadow-blue-gray-500/40 "
+                />
+              </div>
+            </MenuHandler>
+            <MenuList>
+              <Link to={"/admin/profile"}>
+                <MenuItem>
+                  <AiFillSetting size={20} className="mr-2 inline-block" />
+                  Update Profile
+                </MenuItem>
+              </Link>
+              <MenuItem onClick={logout}>
+                <AiOutlineLogout
+                  color="red"
+                  size={20}
+                  className="mr-2 inline-block"
+                />
+                Logout
+              </MenuItem>
+            </MenuList>
+          </Menu>
           <IconButton
             variant="text"
             color="blue-gray"
