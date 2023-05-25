@@ -8,17 +8,22 @@ import { MdOutlineCancel } from "react-icons/md";
 import AddBookingForm from "@/components/bookings/AddBookingForm";
 import ViewBooking from "@/components/bookings/ViewBooking";
 import Swal from "sweetalert2";
-import useBookings from "@/hooks/useBookings";
 import WhiteSearchInput from "@/widgets/share/WhiteSearchInput";
+import { getBookings } from "@/api/booking";
+import dayjs from "dayjs";
 export function Bookings() {
-  const { getBookings, cancelBooking, deleteBooking } = useBookings();
+  // const { getBookings, cancelBooking, deleteBooking } = useBookings();
   const [addBookingModal, setAddBookingModal] = useState(false);
   const [viewBooking, setViewBooking] = useState(false);
   const [booking, setBooking] = useState({});
   const [editMode, setEditMode] = useState(false);
   const columns = [
     { name: "Name", selector: (row) => row.name },
-    { name: "Function Date", width:"180px", selector: (row) => row.functionDate },
+    {
+      name: "Function Date",
+      width: "180px",
+      selector: (row) => dayjs(row.functionDate).format("DD-MMM-YYYY"),
+    },
     { name: "Mobile No", selector: (row) => row.mobileNo },
     { name: "Amount", selector: (row) => row.amount },
     { name: "Advance", selector: (row) => row.advance },
@@ -84,14 +89,11 @@ export function Bookings() {
 
   useEffect(() => {
     getBookings().then((data) => {
-      if (data.success) {
-        setBookings(data.bookings);
-        console.log(data.bookings);
-      }
+      console.log(data);
+      setBookings(data.data);
     });
   }, []);
   const handleEdit = (id) => {
-    console.log(id);
     setEditMode(true);
     setBooking(bookings.find((i) => i.id == id));
     setAddBookingModal(true);
@@ -155,7 +157,7 @@ export function Bookings() {
         return "green";
     }
   };
-  
+
   const handleStatusVal = (status) => {
     switch (status) {
       case 0:
@@ -172,44 +174,35 @@ export function Bookings() {
       className={"mt-10"}
       addBtn={
         <div className="flex w-full justify-end gap-3">
-            <div className="w-full max-w-sm">
-              <WhiteSearchInput
-                label="Search Bookings"
-                // handleChange={(e) =>
-                //   e && setPagination((p) => ({ ...p, query: e.current?.value }))
-                // }
-                // onClear={(inp) => {
-                //   setPagination((p) => ({ ...p, query: "" }));
-                //   inp.current.value = "";
-                // }}
-                // value={pagination.query || ""}
-              />
-            </div>
-            <div>
-              <Button
-                onClick={ () => {
-        setBooking({
-          stageDecoration: false,
-          anjuman: false,
-          mandap: false,
-          entry: false,
-          chowrie: false,
-          cateringService: false,
-        });
-        setAddBookingModal(true);
-        setEditMode(false);
-      }}
-                className="bg-secondary w-full"
-              >
-                New Booking
-              </Button>
-            </div>
+          <div className="w-full max-w-sm">
+            <WhiteSearchInput
+              label="Search Bookings"
+              // handleChange={(e) =>
+              //   e && setPagination((p) => ({ ...p, query: e.current?.value }))
+              // }
+              // onClear={(inp) => {
+              //   setPagination((p) => ({ ...p, query: "" }));
+              //   inp.current.value = "";
+              // }}
+              // value={pagination.query || ""}
+            />
           </div>
-        
-       
-    }
+          <div>
+            <Button
+              onClick={() => {
+                setAddBookingModal(true);
+                setEditMode(false);
+              }}
+              className="w-full bg-secondary"
+            >
+              New Booking
+            </Button>
+          </div>
+        </div>
+      }
     >
-      <DataTable persistTableHead
+      <DataTable
+        persistTableHead
         pagination
         highlightOnHover
         data={bookings}
@@ -217,7 +210,7 @@ export function Bookings() {
       />
       {addBookingModal && (
         <AddBookingForm
-          bookingsHandler={setBookings}
+          onSubmit={(data) => setBookings((prev) => [data, ...prev])}
           handler={setAddBookingModal}
           open={addBookingModal}
           booking={booking}
