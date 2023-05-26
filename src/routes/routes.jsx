@@ -16,6 +16,21 @@ const icon = {
   className: "w-5 h-5 text-inherit",
 };
 
+export const authRoutes = [
+  {
+    icon: <ArrowRightOnRectangleIcon {...icon} />,
+    name: "sign in",
+    path: "/sign-in",
+    element: <SignIn />,
+  },
+  {
+    icon: <UserPlusIcon {...icon} />,
+    name: "sign up",
+    path: "/sign-up",
+    element: <SignUp />,
+  },
+];
+
 export const routes = [
   {
     layout: "admin",
@@ -55,24 +70,6 @@ export const routes = [
         roles: [roles.superUser],
         path: "/calender",
         element: <CalendarView />,
-      },
-    ],
-  },
-  {
-    title: "auth pages",
-    layout: "auth",
-    pages: [
-      {
-        icon: <ArrowRightOnRectangleIcon {...icon} />,
-        name: "sign in",
-        path: "/sign-in",
-        element: <SignIn />,
-      },
-      {
-        icon: <UserPlusIcon {...icon} />,
-        name: "sign up",
-        path: "/sign-up",
-        element: <SignUp />,
       },
     ],
   },

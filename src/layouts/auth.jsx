@@ -1,12 +1,12 @@
 import { Routes, Route } from "react-router-dom";
 import { Footer } from "@/widgets/layout";
-import routes from "@/routes/routes";
+import { authRoutes } from "@/routes/routes";
 import { useLocation, useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import { useEffect } from "react";
 
 export function Auth() {
-   const location = useLocation();
+  const location = useLocation();
   const navigate = useNavigate();
   const from = location.state?.from?.pathname || "/";
   const { user } = useAuth();
@@ -22,13 +22,9 @@ export function Auth() {
         <Navbar routes={navbarRoutes} />
       </div> */}
       <Routes>
-        {routes.map(
-          ({ layout, pages }) =>
-            layout === "auth" &&
-            pages.map(({ path, element }) => (
-              <Route exact path={path} element={element} />
-            ))
-        )}
+        {authRoutes.map((route) => (
+          <Route exact path={route.path} element={route.element} />
+        ))}
       </Routes>
       <div className="container absolute bottom-8 left-2/4 z-10 mx-auto -translate-x-2/4 text-white">
         <Footer />

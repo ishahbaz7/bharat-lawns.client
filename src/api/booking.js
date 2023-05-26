@@ -12,3 +12,21 @@ export const getBookings = (pager = pagerInit) => {
     .post("/booking/get-all", pager, { headers: getAuthToken() })
     .then((res) => res.data);
 };
+
+export const getBooking = (id) => {
+  return axios
+    .get("/booking/" + id, { headers: getAuthToken() })
+    .then((res) => res.data);
+};
+
+export const putBooking = (id, booking) => {
+  return axios
+    .put("/booking/" + id, booking, { headers: getAuthToken() })
+    .then((res) => res.data);
+};
+
+export const cancelBooking = (id) => {
+  return axios
+    .put("/booking/cancel/" + id, null, { headers: getAuthToken() })
+    .then((res) => res.data);
+};
