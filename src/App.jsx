@@ -7,7 +7,8 @@ function App() {
     <Routes>
       <Route path="/admin/*" element={<Admin />} />
       <Route path="/auth/*" element={<Auth />} />
-      <Route path="/" element={<Navigate to="/admin/dashboard" />} />
+      <Route path="/" element={<Navigate to="/admin/bookings" />} />
+      <Route path="/admin" element={<Navigate to="/admin/bookings" />} />
       <Route path="/*" element={<NotFound />} />
     </Routes>
   );

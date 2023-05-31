@@ -9,25 +9,29 @@ import { toPascalCase, toSelectType } from "@/utility/helper";
 import { getBooking, postBooking, putBooking } from "@/api/booking";
 import Loading from "../shared/Loading";
 import dayjs from "dayjs";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const mealType = [
   { label: "Veg", value: 1 },
   { label: "Non-Veg", value: 2 },
 ];
+const requiredField = (value) => {
+  return <div className="text-blue-500">{value} *</div>;
+};
 const formInput = [
   {
-    label: "Name",
+    label: requiredField("Name"),
     name: "name",
     isEditable: true,
   },
   {
-    label: "Mobile No",
+    label: requiredField("Mobile No"),
     name: "mobileNo",
     type: "number",
     isEditable: true,
   },
   {
-    label: "Amount",
+    label: requiredField("Amount"),
     name: "amount",
     type: "number",
     isEditable: false,
@@ -45,7 +49,7 @@ const formInput = [
     isEditable: false,
   },
   {
-    label: "Function Date",
+    label: requiredField("Function Date"),
     name: "functionDate",
     type: "date",
     isEditable: true,
@@ -61,6 +65,17 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
   const [features, setFeatures] = useState([]);
   const [programTypes, setProgramTypes] = useState([]);
   const [functionType, setFunctionType] = useState([]);
+  const params = useParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (
+      (params?.fnDate != undefined || params?.fnDate != null) &&
+      dayjs(params?.fnDate).isValid()
+    ) {
+      setForm((p) => ({ ...p, functionDate: params?.fnDate }));
+    }
+  }, [params]);
 
   useEffect(() => {
     if (bookingId) {
@@ -154,7 +169,7 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
       defaultValue: selectedOptions?.features,
     },
     {
-      placeHolder: "Select Program Timings",
+      placeHolder: requiredField("Select Program Timings"),
       name: "programTypeId",
       id: "programTypes",
       isMulti: false,
@@ -164,7 +179,7 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
       defaultValue: selectedOptions?.programTypes,
     },
     {
-      placeHolder: "Select Meal Type",
+      placeHolder: requiredField("Select Meal Type"),
       name: "mealType",
       id: "mealType",
       isMulti: false,
@@ -174,7 +189,7 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
       defaultValue: selectedOptions.mealType,
     },
     {
-      placeHolder: "Select Function Type",
+      placeHolder: requiredField("Select Function Type"),
       name: "functionTypeId",
       id: "functionTypes",
       isMulti: false,
@@ -190,7 +205,12 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
       <Modal
         open={open}
         title={bookingId ? "Update" : "Add" + " Booking"}
-        handleModal={handler}
+        handleModal={() => {
+          handler();
+          if (params?.fnDate != undefined) {
+            navigate("/admin/calender");
+          }
+        }}
         size={"1050px"}
       >
         <form onSubmit={handleSubmit} className=" w-full" action="#">
@@ -276,7 +296,12 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
             <Button
               variant="text"
               color="red"
-              onClick={() => handler(false)}
+              onClick={() => {
+                handler(false);
+                if (params?.fnDate != undefined) {
+                  navigate("/admin/calender");
+                }
+              }}
               className="mr-1"
             >
               <span>Cancel</span>

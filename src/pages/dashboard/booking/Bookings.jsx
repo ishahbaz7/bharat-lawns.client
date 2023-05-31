@@ -1,148 +1,38 @@
 import TableCard from "@/widgets/cards/TableCard";
-import { Button, Chip, IconButton, Tooltip } from "@material-tailwind/react";
+import { Button, Input } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
-import { BiEdit } from "react-icons/bi";
-import { MdOutlineCancel } from "react-icons/md";
-import AddBookingForm, { mealType } from "@/components/bookings/AddBookingForm";
+import AddBookingForm from "@/components/bookings/AddBookingForm";
 import Swal from "sweetalert2";
 import WhiteSearchInput from "@/widgets/share/WhiteSearchInput";
 import { getBookings, cancelBooking } from "@/api/booking";
 import dayjs from "dayjs";
 import Loading from "@/components/shared/Loading";
 import usePagination, { pagerInit } from "@/hooks/usePagination";
+import { useParams } from "react-router-dom";
+import useBookings from "@/hooks/useBookings";
+import PendingBalance from "@/components/bookings/PendingBalance";
 
 export function Bookings() {
   const [addBookingModal, setAddBookingModal] = useState(false);
   const [bookingId, setBookingId] = useState(null);
+  const [pendingBalanceModal, setPendingBalanceModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const params = useParams();
   const [pager, setPager] = useState(pagerInit);
+  const [bookings, setBookings] = useState([]);
+  const [month, setMonth] = useState(dayjs().format("YYYY-MM"));
   const { handleDataTableSort, handlePageChange, handlePerRowsChange } =
     usePagination(setPager);
-  const columns = [
-    {
-      name: "Name",
-      selector: (row) => row.name,
-      sortable: true,
-      sortField: "name",
-      width: "180px",
-    },
-    {
-      name: "Function Date",
-      width: "180px",
-      selector: (row) => dayjs(row.functionDate).format("DD-MMM-YYYY"),
-      sortable: true,
-      sortField: "functionDate",
-    },
-    {
-      name: "Mobile No",
-      selector: (row) => row.mobileNo,
-      sortable: true,
-      sortField: "mobileNo",
-      width: "130px",
-    },
-    {
-      name: "Amount",
-      selector: (row) => row.amount,
-      sortable: true,
-      sortField: "amount",
-    },
-    {
-      name: "Advance",
-      selector: (row) => row.advance,
-    },
-    {
-      name: "Balance",
-      selector: (row) => row.balance,
-      sortable: true,
-      sortField: "balance",
-      width: "130px",
-    },
-    {
-      name: "Status",
-      selector: (row) => row.status,
-      width: "130px",
-      cell: (row) => (
-        <Chip
-          color={handleStatus(row.status)}
-          value={handleStatusVal(row.status)}
-        />
-      ),
-    },
-    {
-      name: "Features",
-      selector: (row) => row?.features?.map((f) => f.name).join(", "),
-      width: "280px",
-    },
-    {
-      name: "Program Time",
-      selector: (row) => row?.programTypes?.name,
-      sortable: true,
-      sortField: "programTypes.name",
-      width: "160px",
-    },
-    {
-      name: "Meal Type",
-      selector: (row) => mealType.find((m) => m.value == row?.mealType)?.label,
-      sortable: true,
-      sortField: "mealType",
-      width: "130px",
-    },
-    {
-      name: "Function Type",
-      selector: (row) => row?.functionTypes?.name,
-      sortable: true,
-      sortField: "functionTypes.name",
-      width: "160px",
-    },
-    {
-      name: "Action",
-      selector: (row) => row.action,
-      width: "170px",
-      cell: (row) => (
-        <div className="text-xs font-semibold text-blue-gray-600">
-          <Tooltip content="Cancel booking">
-            <IconButton
-              disabled={row.status == 2}
-              onClick={() => handleCancel(row.id)}
-              variant="text"
-            >
-              <MdOutlineCancel color="red" size={25} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip content="Edit">
-            <IconButton
-              disabled={row.status == 2}
-              onClick={() => handleEdit(row.id)}
-              variant="text"
-            >
-              <BiEdit color="green" size={25} />
-            </IconButton>
-          </Tooltip>
-        </div>
-      ),
-    },
-  ];
-  const [bookings, setBookings] = useState([]);
+  const { getColumns } = useBookings();
 
-  useEffect(() => {
-    setLoading(true);
-    getBookings(pager)
-      .then((data) => {
-        setLoading(false);
-        console.log(data);
-        setBookings(data.data);
-      })
-      .catch((err) => {
-        setLoading(false);
-        console.log(err);
-      });
-  }, [pager.query, pager.perPage, pager.page, pager.sort, pager.sortDir]);
+  //open edit modal to update booking
   const handleEdit = (id) => {
     setBookingId(id);
     setAddBookingModal(true);
   };
 
+  //cancel booking
   const handleCancel = (id) => {
     Swal.fire({
       title: "Are you sure?",
@@ -172,28 +62,50 @@ export function Bookings() {
       }
     });
   };
-  const handleStatus = (status) => {
-    console.log("status", status);
-    switch (status) {
-      case 1:
-        return "orange";
-      case 2:
-        return "red";
-      case 3:
-        return "green";
-    }
+  //handle action to be performed on edit or cancel
+  const handleAction = (type, id) => {
+    var actions = {
+      edit: handleEdit,
+      cancel: handleCancel,
+      pendingBalance: () => {
+        setBookingId(id);
+        setPendingBalanceModal(true);
+      },
+    };
+    return actions[type](id);
   };
 
-  const handleStatusVal = (status) => {
-    switch (status) {
-      case 1:
-        return "Active";
-      case 2:
-        return "Cancelled";
-      case 3:
-        return "Done";
+  //open create booking modal if user is redirected from calender
+  useEffect(() => {
+    if (
+      (params?.fnDate != undefined || params?.fnDate != null) &&
+      dayjs(params?.fnDate).isValid()
+    ) {
+      setAddBookingModal(true);
     }
-  };
+  }, [params]);
+
+  //get bookings on page load
+  useEffect(() => {
+    setLoading(true);
+    getBookings(pager, month)
+      .then((data) => {
+        setLoading(false);
+        setBookings(data.data);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
+  }, [
+    pager.query,
+    pager.perPage,
+    pager.page,
+    pager.sort,
+    pager.sortDir,
+    month,
+  ]);
+
   return (
     <TableCard
       title={"Bookings"}
@@ -227,6 +139,15 @@ export function Bookings() {
         </div>
       }
     >
+      <div className="my-2 flex w-full max-w-sm">
+        <Input
+          value={month}
+          onChange={(e) => setMonth(e.target.value)}
+          label="Select Month"
+          type="month"
+          className="w-full"
+        />
+      </div>
       <DataTable
         progressComponent={<Loading />}
         progressPending={loading}
@@ -234,7 +155,7 @@ export function Bookings() {
         pagination
         highlightOnHover
         data={bookings}
-        columns={columns}
+        columns={getColumns(handleAction)}
         paginationServer
         paginationTotalRows={pager.count}
         onChangePage={handlePageChange}
@@ -260,6 +181,25 @@ export function Bookings() {
           handler={setAddBookingModal}
           open={addBookingModal}
           bookingId={bookingId}
+        />
+      )}
+      {pendingBalanceModal && bookingId && (
+        <PendingBalance
+          bookingId={bookingId}
+          open={pendingBalanceModal}
+          handleModal={setPendingBalanceModal}
+          onSubmit={(balance, id) => {
+            let filtered = bookings.map((x) => {
+              if (x.id == id) {
+                console.log({ ...x, balance: x.balance - balance });
+                return { ...x, balance: x.balance - balance };
+              } else {
+                return x;
+              }
+            });
+            console.log(filtered);
+            setBookings(filtered);
+          }}
         />
       )}
     </TableCard>
