@@ -1,8 +1,8 @@
 import axios, { getAuthToken } from "./axios";
 
-export const getMonthlyReports = (month, year) => {
+export const getMonthlyReports = (month, pager) => {
   return axios
-    .get(`reports/month/${month}/${year}`, {
+    .post(`reports/month/${month}`, pager, {
       headers: {
         Authorization: getAuthToken(),
       },

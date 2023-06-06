@@ -15,6 +15,7 @@ import { getEvents } from "@/api/booking";
 import EventView from "@/components/calender/EventView";
 import { useNavigate } from "react-router-dom";
 import { getDates } from "@/utility/helper";
+import DatePicker from "react-datepicker";
 
 dayjs.extend(isBetween);
 dayjs.extend(isSameOrAfter);
@@ -34,11 +35,6 @@ const CalendarView = () => {
   const [event, setEvent] = useState(null);
   const handleNavigate = (newDate) => {
     setSelectedDate(newDate);
-  };
-  const handleDateClick = (date) => {
-    if (date.action === "click") {
-      navigate("/admin/bookings/" + dayjs(selectedDate).format("YYYY-MM-DD"));
-    }
   };
   const eventStyleGetter = (event) => {
     const style = {
@@ -60,6 +56,7 @@ const CalendarView = () => {
   };
   useEffect(() => {
     getEvents(dayjs(selectedDate).format("YYYY-MM-DD")).then((events) => {
+      //reassigning the events with post fixed status
       var evs = [
         ...events?.map((x) => {
           if (dayjs().isAfter(x.start, "day")) {
@@ -68,10 +65,13 @@ const CalendarView = () => {
           return { ...x, title: x?.title + " Booked" };
         }),
       ];
-
+      //getting all dates of selectedDate's month the month
       var dates = getDates(dayjs(selectedDate));
+
+      //checking if the date is not in the events array then adding it to the events array
       dates.forEach((date) => {
-        var ev = evs.find((e) => dayjs(e.start).isSame(date));
+        var ev = evs.find((e) => dayjs(e.start).isSame(date, "day"));
+        console.log("ev", evs);
         if (!ev) {
           if (dayjs().subtract(1, "day").isBefore(date)) {
             evs.push({
@@ -89,14 +89,22 @@ const CalendarView = () => {
 
   return (
     <div>
-      <div className="max-w-[211.27px]">
-        <Input
+      <div className="relative z-10 max-w-[211.27px]">
+        <DatePicker
+          placeholderText="Select Month"
+          dateFormat="MMM yyyy"
+          selected={selectedDate}
+          onChange={(val) => setSelectedDate(val)}
+          className={" h-10 w-full rounded-md border border-blue-gray-200 px-2"}
+          showMonthYearPicker
+        />
+        {/* <Input
           className="w-full"
           type="month"
           value={dayjs(selectedDate).format("YYYY-MM")}
           onChange={(e) => setSelectedDate(e.target.value)}
           label="Select Month"
-        />
+        /> */}
       </div>
 
       <Calendar
@@ -106,8 +114,7 @@ const CalendarView = () => {
           setEvent(e);
           if (e?.title == "Available")
             navigate("/admin/bookings/" + dayjs(e?.start).format("YYYY-MM-DD"));
-          else if (e?.title == "Not Available") {
-          } else {
+          else {
             setEventModal(true);
           }
         }}

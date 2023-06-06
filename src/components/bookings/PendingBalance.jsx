@@ -3,12 +3,14 @@ import Modal from "@/widgets/share/Modal";
 import { Input, Button } from "@material-tailwind/react";
 import { useState, useEffect } from "react";
 import Loading from "../shared/Loading";
+import usePaymentReceipts from "@/hooks/usePaymentReceipts";
 
 const PendingBalance = ({ open, handleModal, bookingId, onSubmit }) => {
   const [loading, setLoading] = useState(false);
   const [booking, setBooking] = useState({});
   const [amountError, setAmountError] = useState(null);
   const [collectedAmount, setCollectedAmount] = useState(0);
+  const { printReceipt } = usePaymentReceipts();
 
   useEffect(() => {
     setLoading(true);
@@ -32,6 +34,7 @@ const PendingBalance = ({ open, handleModal, bookingId, onSubmit }) => {
         setLoading(false);
         onSubmit(collectedAmount, bookingId);
         handleModal(false);
+        printReceipt(res.id);
       })
       .catch((err) => {
         setLoading(false);

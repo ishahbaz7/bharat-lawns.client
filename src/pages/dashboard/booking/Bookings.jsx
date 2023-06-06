@@ -1,5 +1,5 @@
 import TableCard from "@/widgets/cards/TableCard";
-import { Button, Input } from "@material-tailwind/react";
+import { Button } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import AddBookingForm from "@/components/bookings/AddBookingForm";
@@ -9,11 +9,38 @@ import { getBookings, cancelBooking } from "@/api/booking";
 import dayjs from "dayjs";
 import Loading from "@/components/shared/Loading";
 import usePagination, { pagerInit } from "@/hooks/usePagination";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useBookings from "@/hooks/useBookings";
 import PendingBalance from "@/components/bookings/PendingBalance";
+import DatePicker from "react-datepicker";
+import { exportExcel, getParams } from "@/utility/helper";
 
-export function Bookings() {
+const properties = [
+  "invoiceNo",
+  "createdAt",
+  "name",
+  "functionDate",
+  "mobileNo",
+  "amount",
+  "advance",
+  "balance",
+  "programTypes.name",
+  "functionTypes.name",
+];
+const columnName = [
+  "Booking Id",
+  "Function Date",
+  "Name",
+  "Booking Date",
+  "Mobile No",
+  "Amount",
+  "Advance",
+  "Balance",
+  "Program Time",
+  "Function Type",
+];
+
+export function Bookings({ type }) {
   const [addBookingModal, setAddBookingModal] = useState(false);
   const [bookingId, setBookingId] = useState(null);
   const [pendingBalanceModal, setPendingBalanceModal] = useState(false);
@@ -21,10 +48,16 @@ export function Bookings() {
   const params = useParams();
   const [pager, setPager] = useState(pagerInit);
   const [bookings, setBookings] = useState([]);
-  const [month, setMonth] = useState(dayjs().format("YYYY-MM"));
+  const navigate = useNavigate();
   const { handleDataTableSort, handlePageChange, handlePerRowsChange } =
     usePagination(setPager);
   const { getColumns } = useBookings();
+  const [month, setMonth] = useState(new Date());
+
+  useEffect(() => {
+    var month = getParams("month");
+    if (month) setMonth(new Date(month));
+  }, []);
 
   //open edit modal to update booking
   const handleEdit = (id) => {
@@ -88,7 +121,11 @@ export function Bookings() {
   //get bookings on page load
   useEffect(() => {
     setLoading(true);
-    getBookings(pager, month)
+    getBookings(
+      pager,
+      type,
+      type == "monthly" ? dayjs(month).format("YYYY-MM-DD") : null
+    )
       .then((data) => {
         setLoading(false);
         setBookings(data.data);
@@ -104,6 +141,7 @@ export function Bookings() {
     pager.sort,
     pager.sortDir,
     month,
+    type,
   ]);
 
   return (
@@ -125,6 +163,7 @@ export function Bookings() {
               value={pager.query || ""}
             />
           </div>
+
           <div>
             <Button
               onClick={() => {
@@ -139,17 +178,39 @@ export function Bookings() {
         </div>
       }
     >
-      <div className="my-2 flex w-full max-w-sm">
-        <Input
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          label="Select Month"
-          type="month"
-          className="w-full"
-        />
+      <div className="m-2 flex justify-between">
+        {type == "monthly" && (
+          <div className=" flex w-full max-w-[10rem]">
+            <DatePicker
+              placeholderText="Select Month"
+              dateFormat="MMM yyyy"
+              selected={month}
+              onChange={(val) => setMonth(val)}
+              className={
+                " h-10 w-full rounded-md border border-blue-gray-200 px-2"
+              }
+              showMonthYearPicker
+            />
+          </div>
+        )}
+        {type != "monthly" && <div></div>}
+        <div>
+          <Button
+            onClick={() =>
+              exportExcel(bookings, properties, {
+                fileName: "bookings",
+                columns: columnName,
+              })
+            }
+          >
+            Export to Excel
+          </Button>
+        </div>
       </div>
       <DataTable
+        onRowClicked={(row) => navigate(`/admin/booking/${row.id}/receipts`)}
         progressComponent={<Loading />}
+        pointerOnHover
         progressPending={loading}
         persistTableHead
         pagination

@@ -1,19 +1,23 @@
 import {
-  HomeIcon,
   UserCircleIcon,
   TableCellsIcon,
-  BellIcon,
   ArrowRightOnRectangleIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/solid";
-import { Profile, Notifications, Bookings } from "@/pages/dashboard";
+import {
+  Profile,
+  Bookings,
+  MonthlyReport,
+  YearlyReport,
+} from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 import CalendarView from "../pages/dashboard/Calender";
 import { BsCalendar2EventFill } from "react-icons/bs";
 import roles from "@/roles";
-import Reports from "@/pages/dashboard/Reports";
 import { ImStatsBars } from "react-icons/im";
 import PaymentReceipts from "@/pages/dashboard/booking/PaymentReceipt";
+import { MdOutlineAccountBalanceWallet } from "react-icons/md";
+import PrintInvoice from "@/pages/PrintReceipt";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -45,22 +49,6 @@ export const routes = [
       //   path: "/dashboard",
       //   element: <Home />,
       // },
-
-      {
-        icon: <TableCellsIcon {...icon} />,
-        name: "Bookings",
-        roles: [roles.superUser],
-        path: "/bookings/",
-        element: <Bookings />,
-      },
-      {
-        icon: <ImStatsBars {...icon} />,
-        name: "Reports",
-        roles: [roles.superUser],
-        path: "/reports/",
-        element: <Reports />,
-      },
-
       {
         icon: <BsCalendar2EventFill {...icon} />,
         name: "Calendar",
@@ -68,26 +56,59 @@ export const routes = [
         path: "/calender",
         element: <CalendarView />,
       },
+      // {
+      //   icon: <TableCellsIcon {...icon} />,
+      //   name: "Bookings",
+      //   roles: [roles.superUser],
+      //   path: "/bookings/",
+      //   element: <Bookings type={"all"} />,
+      // },
       {
-        icon: <UserCircleIcon {...icon} />,
-        name: "profile",
+        icon: <TableCellsIcon {...icon} />,
+        name: "Bookings",
         roles: [roles.superUser],
-        path: "/profile",
-        element: <Profile />,
+        path: "/monthly-bookings/",
+        element: <Bookings type="monthly" />,
       },
       {
-        icon: <BellIcon {...icon} />,
-        name: "notifications",
+        icon: <MdOutlineAccountBalanceWallet {...icon} />,
+        name: "Pending Settlements",
         roles: [roles.superUser],
-        path: "/notifications",
-        element: <Notifications />,
+        path: "/pending-settlements/",
+        element: <Bookings type="pending" />,
+      },
+      {
+        icon: <ImStatsBars {...icon} />,
+        name: "Monthly Report",
+        roles: [roles.superUser],
+        path: "/reports/monthly",
+        element: <MonthlyReport />,
+      },
+      {
+        icon: <ImStatsBars {...icon} />,
+        name: "Yearly Report",
+        roles: [roles.superUser],
+        path: "/reports/yearly",
+        element: <YearlyReport />,
       },
     ],
   },
 ];
 
 export const otherRoutes = [
-  { name: "paymentReceipt", path: "booking/:id", element: <PaymentReceipts /> },
+  {
+    name: "paymentReceipt",
+    path: "booking/:id/receipts",
+    element: <PaymentReceipts />,
+    roles: [roles.superUser],
+  },
+  {
+    icon: <UserCircleIcon {...icon} />,
+    name: "profile",
+    roles: [roles.superUser],
+    path: "/profile",
+    element: <Profile />,
+  },
 ];
 
 export default routes;

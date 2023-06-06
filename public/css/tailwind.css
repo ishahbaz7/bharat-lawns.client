@@ -43,6 +43,10 @@ div:has(>.min-w-130px) {
     min-width: 130px;
 }
 
+.hbotQl{
+    white-space: normal!important;
+}
+
 ::-webkit-calendar-picker-indicator {
     background: transparent;
     bottom: 0;

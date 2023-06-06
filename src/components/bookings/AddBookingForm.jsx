@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-import { Button, Input, Select, Option } from "@material-tailwind/react";
+import { useEffect, useMemo, useState } from "react";
+import { Button, Input } from "@material-tailwind/react";
 import Modal from "@/widgets/share/Modal";
-import useBookings from "@/hooks/useBookings";
 import AsyncSelect from "react-select/async";
 import { getFeatures, getFunctionTypes, getProgramTypes } from "@/api/features";
 import { pagerInit } from "@/hooks/usePagination";
@@ -10,6 +9,8 @@ import { getBooking, postBooking, putBooking } from "@/api/booking";
 import Loading from "../shared/Loading";
 import dayjs from "dayjs";
 import { useNavigate, useParams } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import usePaymentReceipts from "@/hooks/usePaymentReceipts";
 
 export const mealType = [
   { label: "Veg", value: 1 },
@@ -18,43 +19,6 @@ export const mealType = [
 const requiredField = (value) => {
   return <div className="text-blue-500">{value} *</div>;
 };
-const formInput = [
-  {
-    label: requiredField("Name"),
-    name: "name",
-    isEditable: true,
-  },
-  {
-    label: requiredField("Mobile No"),
-    name: "mobileNo",
-    type: "number",
-    isEditable: true,
-  },
-  {
-    label: requiredField("Amount"),
-    name: "amount",
-    type: "number",
-    isEditable: false,
-  },
-  {
-    label: "Advance",
-    name: "advance",
-    type: "number",
-    isEditable: false,
-  },
-  {
-    label: "Balance",
-    name: "balance",
-    type: "number",
-    isEditable: false,
-  },
-  {
-    label: requiredField("Function Date"),
-    name: "functionDate",
-    type: "date",
-    isEditable: true,
-  },
-];
 
 export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
   // const { postBooking, putBooking } = useBookings();
@@ -66,6 +30,7 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
   const [programTypes, setProgramTypes] = useState([]);
   const [functionType, setFunctionType] = useState([]);
   const params = useParams();
+  const { printReceipt } = usePaymentReceipts();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -138,9 +103,10 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
   //select options from remote
 
   const thenCb = (data) => {
-    onSubmit(data);
+    onSubmit(data?.booking);
     setForm({});
     handler(false);
+    printReceipt(data?.receipt?.id);
   };
   const catchCb = (err) => {
     setLoading(false);
@@ -154,9 +120,92 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
     if (bookingId) {
       putBooking(bookingId, form).then(thenCb).catch(catchCb);
     } else {
-      postBooking(form).then(thenCb).catch(catchCb);
+      postBooking({
+        ...form,
+        balance: form.balance || 0,
+        advance: form.advance || 0,
+        amount: form.amount || 0,
+      })
+        .then(thenCb)
+        .catch(catchCb);
     }
   };
+  const formInput = useMemo(
+    () => [
+      {
+        label: requiredField("Name"),
+        name: "name",
+        isEditable: true,
+      },
+      {
+        label: requiredField("Mobile No"),
+        name: "mobileNo",
+        type: "number",
+        isEditable: true,
+      },
+      {
+        label: requiredField("Amount"),
+        name: "amount",
+        type: "number",
+        isEditable: false,
+        onChange: (e) =>
+          setForm((p) => ({
+            ...p,
+            amount: e.target.value,
+            balance: form.advance
+              ? parseInt(e.target.value) - parseInt(form.advance)
+              : 0,
+          })),
+      },
+      {
+        label: "Advance",
+        name: "advance",
+        type: "number",
+        isEditable: false,
+        onChange: (e) =>
+          setForm((p) => ({
+            ...p,
+            advance: e.target.value,
+            balance: form.amount
+              ? parseInt(form.amount) - parseInt(e.target.value)
+              : 0,
+          })),
+      },
+      {
+        label: "Balance",
+        name: "balance",
+        type: "number",
+        isEditable: false,
+      },
+      {
+        node: (
+          <div className="relative w-full md:max-w-[22rem]">
+            <DatePicker
+              dateFormat={"dd/MM/yyyy"}
+              placeholderText="Select Function Date *"
+              selected={
+                form.functionDate ? dayjs(form.functionDate).toDate() : null
+              }
+              onChange={(val) => setForm((p) => ({ ...p, functionDate: val }))}
+              className={
+                " h-10 w-full  rounded-md border border-blue-gray-200 px-2 placeholder:text-blue-500"
+              }
+            />
+            <span className="text-sm text-red-500">
+              {errors &&
+                errors.FunctionDate?.length > 0 &&
+                errors.FunctionDate[0]}
+            </span>
+          </div>
+        ),
+        label: requiredField("Function Date"),
+        name: "functionDate",
+        type: "date",
+        isEditable: true,
+      },
+    ],
+    [form.functionDate]
+  );
   const selectInputs = [
     {
       placeHolder: "Select Features",
@@ -167,6 +216,20 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
       loadOptions: loadFeatures,
       handleChange: setForm,
       defaultValue: selectedOptions?.features,
+    },
+    {
+      type: "node",
+      node: (
+        <div className="w-full md:max-w-[22rem]">
+          <Input
+            label="Other Features"
+            value={form?.otherFeatures}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, otherFeatures: e.target.value }))
+            }
+          />
+        </div>
+      ),
     },
     {
       placeHolder: requiredField("Select Program Timings"),
@@ -211,46 +274,59 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
             navigate("/admin/calender");
           }
         }}
-        size={"1050px"}
+        size={"800px"}
       >
         <form onSubmit={handleSubmit} className=" w-full" action="#">
-          <div className="flex flex-wrap justify-center gap-4 lg:justify-between">
-            {formInput.map(({ label, name, type, value, isEditable }) => {
-              if (!isEditable && bookingId) {
-                return;
+          <span className="text-sm text-red-500">Required Fields *</span>
+          <div className="mt-2 flex flex-wrap justify-center gap-4 lg:justify-between">
+            {formInput.map(
+              ({ label, name, type, value, isEditable, onChange, node }) => {
+                if (!isEditable && bookingId) {
+                  return;
+                }
+                if (node) {
+                  return node;
+                }
+                return (
+                  <div key={name} className="w-full md:max-w-[22rem]">
+                    <Input
+                      error={errors && errors[toPascalCase(name)]}
+                      type={type || "text"}
+                      value={
+                        type == "date" && form?.functionDate
+                          ? dayjs(form?.functionDate).format("YYYY-MM-DD")
+                          : value || [form[name]] || ""
+                      }
+                      onChange={
+                        onChange
+                          ? onChange
+                          : (e) => {
+                              setForm((prev) => ({
+                                ...prev,
+                                [name]: e.target.value,
+                              }));
+                            }
+                      }
+                      size="md"
+                      className="w-full"
+                      label={label}
+                      id={name}
+                    />
+                    <span className="text-sm text-red-500">
+                      {errors &&
+                        errors[toPascalCase(name)]?.length > 0 &&
+                        errors[toPascalCase(name)][0]}
+                    </span>
+                  </div>
+                );
+              }
+            )}
+            {selectInputs.map((x) => {
+              if (x.type == "node") {
+                return x.node;
               }
               return (
-                <div key={name} className="w-full lg:max-w-[30rem]">
-                  <Input
-                    error={errors && errors[toPascalCase(name)]}
-                    type={type || "text"}
-                    value={
-                      type == "date" && form?.functionDate
-                        ? dayjs(form?.functionDate).format("YYYY-MM-DD")
-                        : value || [form[name]] || ""
-                    }
-                    onChange={(e) => {
-                      setForm((prev) => ({
-                        ...prev,
-                        [name]: e.target.value,
-                      }));
-                    }}
-                    size="md"
-                    className="w-full"
-                    label={label}
-                    id={name}
-                  />
-                  <span className="text-sm text-red-500">
-                    {errors &&
-                      errors[toPascalCase(name)]?.length > 0 &&
-                      errors[toPascalCase(name)][0]}
-                  </span>
-                </div>
-              );
-            })}
-            {selectInputs.map((x) => {
-              return (
-                <div key={x.name} className="w-full lg:max-w-[30rem]">
+                <div key={x.name} className="w-full md:max-w-[22rem]">
                   <AsyncSelect
                     value={x.defaultValue}
                     isMulti={x?.isMulti}

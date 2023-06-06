@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import * as XLSX from "xlsx";
 
 export const toSelectType = (data) => {
   let arr = [];
@@ -45,3 +46,67 @@ export const getDatesByMonthYear = (
   }
   return dates;
 };
+
+export const getParams = (key) => {
+  return new URLSearchParams(window.location.search).get(key);
+};
+
+export function exportExcel(
+  data,
+  properties,
+  options = {},
+  dateFields = ["createdAt", "functionDate", "date"]
+) {
+  const wb = XLSX.utils.book_new();
+
+  // Create a new worksheet
+  const ws = XLSX.utils.json_to_sheet(
+    data.map((d) => {
+      const obj = {};
+      properties.forEach((prop, index) => {
+        const keys = prop.split(".");
+        let value = d[keys[0]];
+        for (let i = 1; i < keys.length; i++) {
+          value = value && value[keys[i]];
+        }
+        if (dateFields.includes(keys[0])) {
+          // Convert valid date to "DD-MM-YYYY" format
+          value = dayjs(value).format("DD-MM-YYYY");
+        }
+        obj[options.columns ? options.columns[index] : prop] = value;
+      });
+      return obj;
+    })
+  );
+
+  // Add the worksheet to the workbook
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+  // Create a blob from the workbook and download it
+  const wbout = XLSX.write(wb, { bookType: "xlsx", type: "binary" });
+  function s2ab(s) {
+    const buf = new ArrayBuffer(s.length);
+    const view = new Uint8Array(buf);
+    for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xff;
+    return buf;
+  }
+  const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+  const fileName =
+    `${options.fileName}-${dayjs().format("DDMMYYYYThhmmss")}.xlsx` ||
+    "data.xlsx";
+  //@ts-ignore
+  if (typeof window.navigator.msSaveBlob !== "undefined") {
+    //@ts-ignore
+    window.navigator.msSaveBlob(blob, fileName);
+  } else {
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
+
+//download excell finished

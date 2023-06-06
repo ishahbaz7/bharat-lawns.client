@@ -13,6 +13,7 @@ import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
 import Authorized from "@/routes/AuthorizedRoutes";
 import { Bookings } from "@/pages/dashboard";
 import roles from "@/roles";
+import Invoice from "@/pages/PrintReceipt";
 
 export function Admin() {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -24,8 +25,8 @@ export function Admin() {
       <Sidenav routes={routes} brandImg={"/assets/logo.png"} />
       <div className="p-4 xl:ml-80">
         <DashboardNavbar />
-        <Configurator />
-        <IconButton
+        {/* <Configurator /> */}
+        {/* <IconButton
           size="lg"
           color="white"
           className="fixed bottom-8 right-8 z-40 rounded-full shadow-blue-gray-900/10"
@@ -33,7 +34,7 @@ export function Admin() {
           onClick={() => setOpenConfigurator(dispatch, true)}
         >
           <Cog6ToothIcon className="h-5 w-5" />
-        </IconButton>
+        </IconButton> */}
         <Routes>
           {otherRoutes.map(({ path, element, roles }) => (
             <Route key={path} element={<Authorized allowRoles={roles} />}>

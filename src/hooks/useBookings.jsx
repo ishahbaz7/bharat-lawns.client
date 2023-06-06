@@ -4,6 +4,7 @@ import { Chip, Tooltip, IconButton } from "@material-tailwind/react";
 import { MdOutlineCancel } from "react-icons/md";
 import { BiEdit } from "react-icons/bi";
 import { mealType } from "@/components/bookings/AddBookingForm";
+import { GiWallet } from "react-icons/gi";
 
 const handleStatus = (status) => {
   switch (status) {
@@ -31,15 +32,29 @@ const useBookings = () => {
     const columns = useMemo(
       () => [
         {
+          name: "Booking Id",
+          selector: (row) => row.invoiceNo,
+
+          width: "110px",
+        },
+        {
+          name: "Booking Date",
+          width: "150px",
+          selector: (row) => dayjs(row.createdAt).format("DD MMM YYYY"),
+          sortable: true,
+          sortField: "createdAt",
+        },
+        {
           name: "Name",
           selector: (row) => row.name,
           sortable: true,
           sortField: "name",
           width: "180px",
         },
+
         {
           name: "Function Date",
-          width: "180px",
+          width: "160px",
           selector: (row) => dayjs(row.functionDate).format("DD MMM YYYY"),
           sortable: true,
           sortField: "functionDate",
@@ -65,19 +80,25 @@ const useBookings = () => {
         {
           name: "Balance",
           cell: (row) =>
-            row.balance > 0 ? (
-              <div
-                onClick={() => cb("pendingBalance", row.id)}
-                className={"cursor-pointer text-red-500"}
-              >
-                {row.balance}
-              </div>
+            row.balance > 0 && row.status != 2 ? (
+              <Tooltip content="Collect Pending Balance">
+                <div
+                  onClick={() => cb("pendingBalance", row.id)}
+                  className={"flex cursor-pointer gap-3 text-red-500"}
+                >
+                  {row.balance} <GiWallet size={20} color="green" />
+                </div>
+              </Tooltip>
             ) : (
               0
             ),
           sortable: true,
           sortField: "balance",
           width: "130px",
+        },
+        {
+          name: "Paid",
+          cell: (row) => row.amount - row.balance,
         },
         {
           name: "Status",
@@ -94,6 +115,11 @@ const useBookings = () => {
           name: "Features",
           selector: (row) => row?.features?.map((f) => f.name).join(", "),
           width: "280px",
+        },
+        {
+          name: "Other Features",
+          selector: (row) => row?.otherFeatures,
+          width: "140px",
         },
         {
           name: "Program Time",
@@ -134,7 +160,9 @@ const useBookings = () => {
               </Tooltip>
               <Tooltip content="Edit">
                 <IconButton
-                  disabled={row.status == 2}
+                  disabled={
+                    row.status == 2 || dayjs().isAfter(row.functionDate)
+                  }
                   onClick={() => cb("edit", row.id)}
                   variant="text"
                 >

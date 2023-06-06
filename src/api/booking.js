@@ -8,12 +8,22 @@ export const postBooking = (booking) => {
     .then((res) => res.data);
 };
 
-export const getBookings = (
-  pager = pagerInit,
-  date = dayjs().format("YYYY-MM")
-) => {
+export const getBookings = (pager = pagerInit, type, month) => {
+  console.log(type);
   return axios
-    .post("/booking/get-all/" + date, pager, { headers: getAuthToken() })
+    .post(
+      `/booking/get-all/${
+        type == "monthly"
+          ? "?month=" + month
+          : type == "pending"
+          ? "?pending=true"
+          : ""
+      }`,
+      pager,
+      {
+        headers: getAuthToken(),
+      }
+    )
     .then((res) => res.data);
 };
 
@@ -48,5 +58,17 @@ export const postPendingBalance = (id, amount) => {
       {},
       { headers: getAuthToken() }
     )
+    .then((res) => res.data);
+};
+
+export const getReceipts = (bookingId) => {
+  return axios
+    .get("/booking/get-receipts/" + bookingId, { headers: getAuthToken() })
+    .then((res) => res.data);
+};
+
+export const getPrintReceipt = (receiptId) => {
+  return axios
+    .get("/booking/print-receipt/" + receiptId, { headers: getAuthToken() })
     .then((res) => res.data);
 };
