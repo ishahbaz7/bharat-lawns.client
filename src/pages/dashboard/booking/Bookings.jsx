@@ -14,6 +14,9 @@ import useBookings from "@/hooks/useBookings";
 import PendingBalance from "@/components/bookings/PendingBalance";
 import DatePicker from "react-datepicker";
 import { exportExcel, getParams } from "@/utility/helper";
+import useAuth from "@/hooks/useAuth";
+import roles from "@/roles";
+import { useMaterialTailwindController, setPager } from "@/context";
 
 const properties = [
   "invoiceNo",
@@ -41,16 +44,19 @@ const columnName = [
 ];
 
 export function Bookings({ type }) {
+  const [controller, dispatch] = useMaterialTailwindController();
+  const { pager } = controller;
+  const [pag, setPag] = useState(pagerInit);
   const [addBookingModal, setAddBookingModal] = useState(false);
   const [bookingId, setBookingId] = useState(null);
   const [pendingBalanceModal, setPendingBalanceModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const params = useParams();
-  const [pager, setPager] = useState(pagerInit);
   const [bookings, setBookings] = useState([]);
+  const { isInRole } = useAuth();
   const navigate = useNavigate();
   const { handleDataTableSort, handlePageChange, handlePerRowsChange } =
-    usePagination(setPager);
+    usePagination(setPag);
   const { getColumns } = useBookings();
   const [month, setMonth] = useState(new Date());
 
@@ -58,6 +64,9 @@ export function Bookings({ type }) {
     var month = getParams("month");
     if (month) setMonth(new Date(month));
   }, []);
+  useEffect(() => {
+    setPager(dispatch, pag);
+  }, [pag]);
 
   //open edit modal to update booking
   const handleEdit = (id) => {
@@ -150,31 +159,33 @@ export function Bookings({ type }) {
       className={"mt-10"}
       addBtn={
         <div className="flex w-full justify-end gap-3">
-          <div className="w-full max-w-sm">
+          <div className="hidden w-full max-w-xs md:block">
             <WhiteSearchInput
               label="Search Bookings"
               handleChange={(e) =>
-                e && setPager((p) => ({ ...p, query: e.current?.value }))
+                e && setPager(dispatch, { ...pager, query: e.current?.value })
               }
               onClear={(inp) => {
-                setPager((p) => ({ ...p, query: "" }));
+                setPager(dispatch, { ...pager, query: "" });
                 inp.current.value = "";
               }}
               value={pager.query || ""}
             />
           </div>
 
-          <div>
-            <Button
-              onClick={() => {
-                setBookingId(null);
-                setAddBookingModal(true);
-              }}
-              className="w-full bg-secondary"
-            >
-              New Booking
-            </Button>
-          </div>
+          {!isInRole(roles.report) && (
+            <div>
+              <Button
+                onClick={() => {
+                  setBookingId(null);
+                  setAddBookingModal(true);
+                }}
+                className="w-full bg-secondary"
+              >
+                New Booking
+              </Button>
+            </div>
+          )}
         </div>
       }
     >
@@ -208,7 +219,10 @@ export function Bookings({ type }) {
         </div>
       </div>
       <DataTable
-        onRowClicked={(row) => navigate(`/admin/booking/${row.id}/receipts`)}
+        onRowClicked={(row) =>
+          !isInRole(roles.report) &&
+          navigate(`/admin/booking/${row.id}/receipts`)
+        }
         progressComponent={<Loading />}
         pointerOnHover
         progressPending={loading}
@@ -232,7 +246,8 @@ export function Bookings({ type }) {
               ? setBookings((prev) =>
                   prev.map((val) => {
                     if (val.id == bookingId) {
-                      return { ...val, ...data };
+                      console.log("data", data);
+                      return data;
                     }
                     return val;
                   })
@@ -252,13 +267,11 @@ export function Bookings({ type }) {
           onSubmit={(balance, id) => {
             let filtered = bookings.map((x) => {
               if (x.id == id) {
-                console.log({ ...x, balance: x.balance - balance });
                 return { ...x, balance: x.balance - balance };
               } else {
                 return x;
               }
             });
-            console.log(filtered);
             setBookings(filtered);
           }}
         />

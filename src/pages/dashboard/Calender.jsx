@@ -10,7 +10,6 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import minMax from "dayjs/plugin/minMax";
 import utc from "dayjs/plugin/utc";
 import { useState, useEffect } from "react";
-import { Input } from "@material-tailwind/react";
 import { getEvents } from "@/api/booking";
 import EventView from "@/components/calender/EventView";
 import { useNavigate } from "react-router-dom";
@@ -52,7 +51,7 @@ const CalendarView = () => {
       style.backgroundColor = "#3B82F6";
     }
 
-    return { style };
+    return { style, className: "text-xs md:text-base" };
   };
   useEffect(() => {
     getEvents(dayjs(selectedDate).format("YYYY-MM-DD")).then((events) => {
@@ -71,7 +70,6 @@ const CalendarView = () => {
       //checking if the date is not in the events array then adding it to the events array
       dates.forEach((date) => {
         var ev = evs.find((e) => dayjs(e.start).isSame(date, "day"));
-        console.log("ev", evs);
         if (!ev) {
           if (dayjs().subtract(1, "day").isBefore(date)) {
             evs.push({
@@ -89,7 +87,7 @@ const CalendarView = () => {
 
   return (
     <div>
-      <div className="relative z-10 max-w-[211.27px]">
+      <div className="relative z-10 max-w-[211.27px] ">
         <DatePicker
           placeholderText="Select Month"
           dateFormat="MMM yyyy"

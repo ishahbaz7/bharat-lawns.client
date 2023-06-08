@@ -1,10 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import dayjs from "dayjs";
 import { Chip, Tooltip, IconButton } from "@material-tailwind/react";
-import { MdOutlineCancel } from "react-icons/md";
+import { MdOutlineCancel, MdOutlineVisibility } from "react-icons/md";
 import { BiEdit } from "react-icons/bi";
 import { mealType } from "@/components/bookings/AddBookingForm";
 import { GiWallet } from "react-icons/gi";
+import useAuth from "./useAuth";
+import roles from "@/roles";
+import useScreenSize from "./useScreenSize";
 
 const handleStatus = (status) => {
   switch (status) {
@@ -28,6 +31,11 @@ const handleStatusVal = (status) => {
 };
 
 const useBookings = () => {
+  const { isInRole } = useAuth();
+  const sz = useScreenSize();
+  useEffect(() => {
+    console.log(sz.width);
+  }, [sz]);
   const getColumns = (cb) => {
     const columns = useMemo(
       () => [
@@ -36,6 +44,7 @@ const useBookings = () => {
           selector: (row) => row.invoiceNo,
 
           width: "110px",
+          omit: sz.width <= 500,
         },
         {
           name: "Booking Date",
@@ -43,18 +52,19 @@ const useBookings = () => {
           selector: (row) => dayjs(row.createdAt).format("DD MMM YYYY"),
           sortable: true,
           sortField: "createdAt",
+          omit: sz.width <= 500,
         },
         {
           name: "Name",
           selector: (row) => row.name,
           sortable: true,
           sortField: "name",
-          width: "180px",
+          width: sz.width <= 500 ? "130px" : "180px",
         },
 
         {
           name: "Function Date",
-          width: "160px",
+          width: sz.width <= 500 ? "125px" : "160px",
           selector: (row) => dayjs(row.functionDate).format("DD MMM YYYY"),
           sortable: true,
           sortField: "functionDate",
@@ -64,7 +74,7 @@ const useBookings = () => {
           selector: (row) => row.mobileNo,
           sortable: true,
           sortField: "mobileNo",
-          width: "130px",
+          width: sz.width <= 500 ? "110px" : "130px",
         },
         {
           name: "Amount",
@@ -72,18 +82,22 @@ const useBookings = () => {
           sortable: true,
           sortField: "amount",
           width: "130px",
+          omit: sz.width <= 500,
         },
         {
           name: "Advance",
           selector: (row) => row.advance,
+          omit: sz.width <= 500,
         },
         {
           name: "Balance",
           cell: (row) =>
             row.balance > 0 && row.status != 2 ? (
-              <Tooltip content="Collect Pending Balance">
+              <Tooltip content={"Collect Pending Balance"}>
                 <div
-                  onClick={() => cb("pendingBalance", row.id)}
+                  onClick={() =>
+                    !isInRole(roles.report) && cb("pendingBalance", row.id)
+                  }
                   className={"flex cursor-pointer gap-3 text-red-500"}
                 >
                   {row.balance} <GiWallet size={20} color="green" />
@@ -94,11 +108,12 @@ const useBookings = () => {
             ),
           sortable: true,
           sortField: "balance",
-          width: "130px",
+          width: sz.width <= 500 ? "110px" : "130px",
         },
         {
           name: "Paid",
           cell: (row) => row.amount - row.balance,
+          omit: sz.width <= 500,
         },
         {
           name: "Status",
@@ -110,23 +125,26 @@ const useBookings = () => {
               value={handleStatusVal(row.status)}
             />
           ),
+          omit: sz.width <= 500,
         },
         {
           name: "Features",
           selector: (row) => row?.features?.map((f) => f.name).join(", "),
           width: "280px",
+          omit: sz.width <= 500,
         },
         {
           name: "Other Features",
           selector: (row) => row?.otherFeatures,
           width: "140px",
+          omit: sz.width <= 500,
         },
         {
           name: "Program Time",
           selector: (row) => row?.programTypes?.name,
           sortable: true,
           sortField: "programTypes.name",
-          width: "160px",
+          width: sz.width <= 500 ? "130px" : "160px",
         },
         {
           name: "Meal Type",
@@ -135,6 +153,7 @@ const useBookings = () => {
           sortable: true,
           sortField: "mealType",
           width: "130px",
+          omit: sz.width <= 500,
         },
         {
           name: "Function Type",
@@ -142,13 +161,22 @@ const useBookings = () => {
           sortable: true,
           sortField: "functionTypes.name",
           width: "160px",
+          omit: sz.width <= 500,
         },
         {
           name: "Action",
+          omit: isInRole(roles.report),
           selector: (row) => row.action,
           width: "170px",
           cell: (row) => (
-            <div className="text-xs font-semibold text-blue-gray-600">
+            <div className={"text-xs font-semibold text-blue-gray-600"}>
+              {sz.width <= 500 && (
+                <Tooltip content="View booking details">
+                  <IconButton onClick={() => cb("view", row.id)} variant="text">
+                    <MdOutlineVisibility size={25} />
+                  </IconButton>
+                </Tooltip>
+              )}
               <Tooltip content="Cancel booking">
                 <IconButton
                   disabled={row.status == 2}
@@ -173,7 +201,7 @@ const useBookings = () => {
           ),
         },
       ],
-      []
+      [sz.width]
     );
     return columns;
   };

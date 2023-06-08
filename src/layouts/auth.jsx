@@ -4,15 +4,20 @@ import { authRoutes } from "@/routes/routes";
 import { useLocation, useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import { useEffect } from "react";
+import roles from "@/roles";
 
 export function Auth() {
   const location = useLocation();
   const navigate = useNavigate();
   const from = location.state?.from?.pathname || "/";
-  const { user } = useAuth();
+  const { user, isInRole } = useAuth();
   useEffect(() => {
     if (user) {
-      navigate(from, { replace: true });
+      if (isInRole(roles.report)) {
+        navigate("/admin/monthly-bookings", { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     }
   }, [user]);
 

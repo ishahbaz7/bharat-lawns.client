@@ -23,7 +23,6 @@ const usePagination = (setter, currentFilters = []) => {
   };
 
   async function handleDataTableSort(column, sortDir) {
-    console.log(column, sortDir);
     setter((p) => ({
       ...p,
       sortDir: sortDir || "desc",

@@ -50,9 +50,9 @@ export function Admin() {
                 </Route>
               ))
           )}
-          <Route element={<Authorized allowRoles={[roles.superUser]} />}>
+          {/* <Route element={<Authorized allowRoles={[roles.superUser]} />}>
             <Route element={<Bookings />} path="/bookings/:fnDate" />
-          </Route>
+          </Route> */}
         </Routes>
         {user && (
           <div className="text-blue-gray-600">

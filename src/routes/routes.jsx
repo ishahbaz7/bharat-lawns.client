@@ -2,7 +2,6 @@ import {
   UserCircleIcon,
   TableCellsIcon,
   ArrowRightOnRectangleIcon,
-  UserPlusIcon,
 } from "@heroicons/react/24/solid";
 import {
   Profile,
@@ -30,12 +29,12 @@ export const authRoutes = [
     path: "/sign-in",
     element: <SignIn />,
   },
-  {
-    icon: <UserPlusIcon {...icon} />,
-    name: "sign up",
-    path: "/sign-up",
-    element: <SignUp />,
-  },
+  // {
+  //   icon: <UserPlusIcon {...icon} />,
+  //   name: "sign up",
+  //   path: "/sign-up",
+  //   element: <SignUp />,
+  // },
 ];
 
 export const routes = [
@@ -52,7 +51,7 @@ export const routes = [
       {
         icon: <BsCalendar2EventFill {...icon} />,
         name: "Calendar",
-        roles: [roles.superUser],
+        roles: [roles.superUser, roles.booking],
         path: "/calender",
         element: <CalendarView />,
       },
@@ -66,28 +65,28 @@ export const routes = [
       {
         icon: <TableCellsIcon {...icon} />,
         name: "Bookings",
-        roles: [roles.superUser],
-        path: "/monthly-bookings/",
+        roles: [roles.superUser, roles.booking, roles.report],
+        path: "/monthly-bookings",
         element: <Bookings type="monthly" />,
       },
       {
         icon: <MdOutlineAccountBalanceWallet {...icon} />,
         name: "Pending Settlements",
-        roles: [roles.superUser],
-        path: "/pending-settlements/",
+        roles: [roles.superUser, roles.booking],
+        path: "/pending-settlements",
         element: <Bookings type="pending" />,
       },
       {
         icon: <ImStatsBars {...icon} />,
         name: "Monthly Report",
-        roles: [roles.superUser],
+        roles: [roles.superUser, roles.report],
         path: "/reports/monthly",
         element: <MonthlyReport />,
       },
       {
         icon: <ImStatsBars {...icon} />,
         name: "Yearly Report",
-        roles: [roles.superUser],
+        roles: [roles.superUser, roles.report],
         path: "/reports/yearly",
         element: <YearlyReport />,
       },
@@ -100,12 +99,18 @@ export const otherRoutes = [
     name: "paymentReceipt",
     path: "booking/:id/receipts",
     element: <PaymentReceipts />,
-    roles: [roles.superUser],
+    roles: [roles.superUser, roles.booking],
+  },
+  {
+    path: "/bookings/:fnDate",
+    element: <Bookings />,
+    name: "bookings",
+    roles: [roles.superUser, roles.booking],
   },
   {
     icon: <UserCircleIcon {...icon} />,
     name: "profile",
-    roles: [roles.superUser],
+    roles: [roles.superUser, roles.booking, roles.report],
     path: "/profile",
     element: <Profile />,
   },

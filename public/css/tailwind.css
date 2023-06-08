@@ -13,11 +13,11 @@
 } */
 
 .rdt_TableHeadRow {
-    @apply !bg-blue-gray-800 text-white border-blue-gray-50 text-base border
+    @apply !bg-blue-gray-800 text-white border-blue-gray-50  md:text-base border
 }
 
 .rdt_TableRow {
-    @apply !text-base
+    @apply md:!text-base
 }
 
 .rdt_TableCell {
@@ -29,18 +29,17 @@
 }
 
 .rdt_TableBody {
-    max-height: 420px;
-    overflow-y: scroll;
-    min-height: 300px;
+    @apply md:max-h-[420px] md:min-h-[300px] min-h-[200px] max-h-[220px] overflow-scroll
 }
 
-.rdt_Table {
-    min-height: 300px;
-}
 
 /* input size min width change */
 div:has(>.min-w-130px) {
     min-width: 130px;
+}
+
+.rdt_TableCell div{
+    white-space: normal!important;
 }
 
 .hbotQl{

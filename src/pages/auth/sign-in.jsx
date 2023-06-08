@@ -99,7 +99,7 @@ export function SignIn() {
                   />
                 )}
               </Button>
-              <Typography variant="small" className="mt-6 flex justify-center">
+              {/* <Typography variant="small" className="mt-6 flex justify-center">
                 Don't have an account?
                 <Link to="/auth/sign-up">
                   <Typography
@@ -111,7 +111,7 @@ export function SignIn() {
                     Sign up
                   </Typography>
                 </Link>
-              </Typography>
+              </Typography> */}
             </CardFooter>
           </Card>
         </form>

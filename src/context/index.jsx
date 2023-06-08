@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { pagerInit } from "@/hooks/usePagination";
 
 export const MaterialTailwind = React.createContext(null);
 MaterialTailwind.displayName = "MaterialTailwindContext";
@@ -24,6 +25,9 @@ export function reducer(state, action) {
     case "OPEN_CONFIGURATOR": {
       return { ...state, openConfigurator: action.value };
     }
+    case "SET_PAGER": {
+      return { ...state, pager: action.value };
+    }
     default: {
       throw new Error(`Unhandled action type: ${action.type}`);
     }
@@ -38,6 +42,7 @@ export function MaterialTailwindControllerProvider({ children }) {
     transparentNavbar: true,
     fixedNavbar: false,
     openConfigurator: false,
+    pager: pagerInit,
   };
 
   const [controller, dispatch] = React.useReducer(reducer, initialState);
@@ -83,3 +88,5 @@ export const setFixedNavbar = (dispatch, value) =>
   dispatch({ type: "FIXED_NAVBAR", value });
 export const setOpenConfigurator = (dispatch, value) =>
   dispatch({ type: "OPEN_CONFIGURATOR", value });
+export const setPager = (dispatch, value) =>
+  dispatch({ type: "SET_PAGER", value });

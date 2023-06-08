@@ -103,10 +103,15 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
   //select options from remote
 
   const thenCb = (data) => {
-    onSubmit(data?.booking);
+    if (bookingId) {
+      onSubmit(form);
+    } else {
+      onSubmit(data?.booking);
+      printReceipt(data?.receipt?.id);
+    }
     setForm({});
     handler(false);
-    printReceipt(data?.receipt?.id);
+    setLoading(false);
   };
   const catchCb = (err) => {
     setLoading(false);
@@ -118,13 +123,19 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
     setLoading(true);
     setErrors({});
     if (bookingId) {
-      putBooking(bookingId, form).then(thenCb).catch(catchCb);
+      putBooking(bookingId, {
+        ...form,
+        functionDate: dayjs(form.functionDate).format("YYYY-MM-DD"),
+      })
+        .then(thenCb)
+        .catch(catchCb);
     } else {
       postBooking({
         ...form,
         balance: form.balance || 0,
         advance: form.advance || 0,
         amount: form.amount || 0,
+        functionDate: dayjs(form.functionDate).format("YYYY-MM-DD"),
       })
         .then(thenCb)
         .catch(catchCb);
@@ -179,7 +190,7 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
       },
       {
         node: (
-          <div className="relative w-full md:max-w-[22rem]">
+          <div key={"fnDate"} className="relative w-full md:max-w-[22rem]">
             <DatePicker
               dateFormat={"dd/MM/yyyy"}
               placeholderText="Select Function Date *"
@@ -204,7 +215,7 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
         isEditable: true,
       },
     ],
-    [form.functionDate]
+    [form.functionDate, errors]
   );
   const selectInputs = [
     {
@@ -220,10 +231,10 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
     {
       type: "node",
       node: (
-        <div className="w-full md:max-w-[22rem]">
+        <div key={"otherFeature"} className="w-full md:max-w-[22rem]">
           <Input
             label="Other Features"
-            value={form?.otherFeatures}
+            value={form?.otherFeatures || ""}
             onChange={(e) =>
               setForm((p) => ({ ...p, otherFeatures: e.target.value }))
             }
@@ -292,11 +303,7 @@ export default function AddBookingForm({ open, handler, onSubmit, bookingId }) {
                     <Input
                       error={errors && errors[toPascalCase(name)]}
                       type={type || "text"}
-                      value={
-                        type == "date" && form?.functionDate
-                          ? dayjs(form?.functionDate).format("YYYY-MM-DD")
-                          : value || [form[name]] || ""
-                      }
+                      value={value || [form[name]] || ""}
                       onChange={
                         onChange
                           ? onChange

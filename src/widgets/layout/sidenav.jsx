@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
   Avatar,
@@ -8,8 +8,12 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
+import useAuth from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 export function Sidenav({ brandImg, brandName, routes }) {
+  const { pathname } = useLocation();
+  const { isInRole } = useAuth();
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavColor, sidenavType, openSidenav } = controller;
   const sidenavTypes = {
@@ -17,6 +21,10 @@ export function Sidenav({ brandImg, brandName, routes }) {
     white: "bg-white shadow-lg",
     transparent: "bg-transparent",
   };
+
+  useEffect(() => {
+    setOpenSidenav(dispatch, false);
+  }, [pathname]);
 
   return (
     <aside
@@ -63,36 +71,40 @@ export function Sidenav({ brandImg, brandName, routes }) {
                 </Typography>
               </li>
             )}
-            {pages.map(({ icon, name, path }) => (
-              <li key={name}>
-                <NavLink to={`/${layout}${path}`}>
-                  {({ isActive }) => {
-                    return (
-                      <Button
-                        variant={isActive ? "gradient" : "text"}
-                        color={
-                          isActive
-                            ? sidenavColor
-                            : sidenavType === "dark"
-                            ? "white"
-                            : "blue-gray"
-                        }
-                        className="flex items-center gap-4 px-4 capitalize"
-                        fullWidth
-                      >
-                        {icon}
-                        <Typography
-                          color="inherit"
-                          className="font-medium capitalize"
-                        >
-                          {name}
-                        </Typography>
-                      </Button>
-                    );
-                  }}
-                </NavLink>
-              </li>
-            ))}
+            {pages.map(({ icon, name, path, roles }) => {
+              if (isInRole(roles)) {
+                return (
+                  <li key={name}>
+                    <NavLink to={`/${layout}${path}`}>
+                      {({ isActive }) => {
+                        return (
+                          <Button
+                            variant={isActive ? "gradient" : "text"}
+                            color={
+                              isActive
+                                ? sidenavColor
+                                : sidenavType === "dark"
+                                ? "white"
+                                : "blue-gray"
+                            }
+                            className="flex items-center gap-4 px-4 capitalize"
+                            fullWidth
+                          >
+                            {icon}
+                            <Typography
+                              color="inherit"
+                              className="font-medium capitalize"
+                            >
+                              {name}
+                            </Typography>
+                          </Button>
+                        );
+                      }}
+                    </NavLink>
+                  </li>
+                );
+              }
+            })}
           </ul>
         ))}
       </div>

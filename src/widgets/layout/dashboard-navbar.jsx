@@ -13,7 +13,6 @@ import {
 } from "@material-tailwind/react";
 import { AiFillSetting, AiOutlineLogout } from "react-icons/ai";
 import {
-  Cog6ToothIcon,
   BellIcon,
   ClockIcon,
   CreditCardIcon,
@@ -23,13 +22,15 @@ import {
   useMaterialTailwindController,
   setOpenConfigurator,
   setOpenSidenav,
+  setPager,
 } from "@/context";
 import useAuth from "@/hooks/useAuth";
 import avatarImg from "/assets/avatar.jpeg";
+import { useEffect } from "react";
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
-  const { fixedNavbar, openSidenav } = controller;
+  const { fixedNavbar, openSidenav, pager } = controller;
   const { pathname } = useLocation();
   const [layout, page] = pathname?.split("/").filter((el) => el !== "");
   const { user, logout } = useAuth();
@@ -45,7 +46,7 @@ export function DashboardNavbar() {
       fullWidth
       blurred={fixedNavbar}
     >
-      <div className="flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center">
+      <div className="mx-5 flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center">
         <div className="capitalize">
           <Breadcrumbs
             className={`bg-transparent p-0 transition-all ${
@@ -74,8 +75,16 @@ export function DashboardNavbar() {
           </Typography>
         </div>
         <div className="flex items-center">
-          <div className="mr-auto md:mr-4 md:w-56">
-            <Input label="Type here" />
+          <div className="mr-auto md:mr-4  md:hidden md:w-56">
+            {(pathname == "/admin/monthly-bookings" ||
+              pathname == "/admin/pending-settlements") && (
+              <Input
+                onChange={(e) =>
+                  setPager(dispatch, { ...pager, query: e.target.value })
+                }
+                label="Search Bookings"
+              />
+            )}
           </div>
           <IconButton
             variant="text"
@@ -123,7 +132,7 @@ export function DashboardNavbar() {
           >
             <Cog6ToothIcon className="h-5 w-5 text-blue-gray-500" />
           </IconButton> */}
-          <Menu>
+          {/* <Menu>
             <MenuHandler>
               <IconButton variant="text" color="blue-gray">
                 <BellIcon className="h-5 w-5 text-blue-gray-500" />
@@ -200,7 +209,7 @@ export function DashboardNavbar() {
                 </div>
               </MenuItem>
             </MenuList>
-          </Menu>
+          </Menu> */}
         </div>
       </div>
     </Navbar>

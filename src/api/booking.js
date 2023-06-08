@@ -9,7 +9,6 @@ export const postBooking = (booking) => {
 };
 
 export const getBookings = (pager = pagerInit, type, month) => {
-  console.log(type);
   return axios
     .post(
       `/booking/get-all/${
